@@ -4,6 +4,11 @@ import asyncio
 import logging
 from datetime import datetime, timedelta
 
+try:
+    asyncio.get_event_loop()
+except RuntimeError:
+    asyncio.set_event_loop(asyncio.new_event_loop())
+
 from aiohttp import web
 from aiogram import Bot, Dispatcher
 from aiogram.client.default import DefaultBotProperties
@@ -17,6 +22,10 @@ from app.handlers import setup_handlers
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
+
+
+async def health(_: web.Request) -> web.Response:
+    return web.json_response({"ok": True})
 
 
 async def daily_reset_task() -> None:
@@ -61,6 +70,7 @@ async def run_webhook() -> None:
     await on_startup(bot)
 
     app = web.Application()
+    app.router.add_get("/health", health)
     handler = SimpleRequestHandler(
         dispatcher=dp,
         bot=bot,
