@@ -1,6 +1,6 @@
 # Telegram Broadcast Bot
 
-## Ishga tushirish
+## Lokal ishga tushirish
 
 1. `python -m venv .venv`
 2. `.venv\Scripts\activate` yoki `source .venv/bin/activate`
@@ -8,11 +8,25 @@
 4. `.env` faylini to'ldiring
 5. `python bot.py`
 
+## Render webhook sozlamasi
+
+`.env` ichiga quyidagilarni kiriting:
+
+```env
+USE_WEBHOOK=true
+PORT=10000
+WEBHOOK_BASE_URL=https://your-service.onrender.com
+WEBHOOK_PATH=/telegram/webhook
+WEBHOOK_SECRET=change_me
+```
+
+Render avtomatik `PORT` beradi. Bot webhook rejimida `0.0.0.0:$PORT` portda ishga tushadi.
+
 ## Asosiy imkoniyatlar
 
 - Telegram akkauntini ulash
-- Admin bo'lgan guruhlarni skanerlash
+- Faqat guruhlarni skanerlash
 - Tanlangan guruhlarga xabar yuborish
-- Matn, rasm, video, audio, hujjat va boshqa keng tarqalgan formatlarni ko'chirib yuborish
-- Kunlik limit va interval boshqaruvi
-- Admin panel, kalit yaratish va statistikalar
+- Admin panel va kalit boshqaruvi
+- Faol jarayonlarni boshqarish
+- Webhook orqali Render'da ishlash
