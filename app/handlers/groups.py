@@ -30,7 +30,7 @@ async def groups_entry(message: types.Message, state: FSMContext) -> None:
     if not user:
         await message.answer('❌ Avval akkauntni ulang.')
         return
-    status_message = await message.answer('🔄 Guruhlar skanerlanmoqda...')
+    status_message = await message.answer('🔄 Siz qo‘shilgan guruhlar skanerlanmoqda...')
     try:
         groups = await scan_admin_groups(message.from_user.id, user['session_name'], user['session_string'])
     except Exception as error:
@@ -39,7 +39,7 @@ async def groups_entry(message: types.Message, state: FSMContext) -> None:
     await upsert_groups(message.from_user.id, groups)
     rows = await get_admin_groups(message.from_user.id)
     if not rows:
-        await status_message.edit_text("❌ Admin bo‘lgan guruh topilmadi.")
+        await status_message.edit_text("❌ Siz qo‘shilgan guruh topilmadi.")
         return
     await status_message.edit_text(
         "✅ Guruhlar topildi.\n\nKerakli guruhlarni tanlang.",

@@ -139,19 +139,18 @@ async def scan_admin_groups(user_id: int, session_name: str | None, session_stri
     await lock.acquire()
     client = build_authenticated_client(user_id, session_name, session_string)
     result: list[tuple[int, str]] = []
+    seen_chat_ids: set[int] = set()
     try:
         await client.start()
         await warmup_client_peers(client)
         async for dialog in client.get_dialogs():
             if dialog.chat.type not in {enums.ChatType.GROUP, enums.ChatType.SUPERGROUP}:
                 continue
-            try:
-                member = await client.get_chat_member(dialog.chat.id, 'me')
-            except Exception:
+            chat_id = int(dialog.chat.id)
+            if chat_id in seen_chat_ids:
                 continue
-            status = getattr(member, 'status', None)
-            if status in {enums.ChatMemberStatus.OWNER, enums.ChatMemberStatus.ADMINISTRATOR}:
-                result.append((dialog.chat.id, dialog.chat.title or str(dialog.chat.id)))
+            seen_chat_ids.add(chat_id)
+            result.append((chat_id, dialog.chat.title or str(chat_id)))
     finally:
         await safe_stop(client)
         if lock.locked():
