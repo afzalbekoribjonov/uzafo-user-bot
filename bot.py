@@ -20,8 +20,15 @@ from app.config import settings, validate_settings, webhook_url
 from app.db import init_db, reset_limits
 from app.handlers import setup_handlers
 
-logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.basicConfig(level=logging.WARNING, format="%(asctime)s [%(levelname)s] %(message)s")
+logging.getLogger('aiogram').setLevel(logging.WARNING)
+logging.getLogger('aiohttp').setLevel(logging.WARNING)
+logging.getLogger('pyrogram').setLevel(logging.WARNING)
 logger = logging.getLogger(__name__)
+
+
+async def root(_: web.Request) -> web.Response:
+    return web.json_response({"ok": True, "service": "telegram-broadcast-bot", "status": "running"})
 
 
 async def health(_: web.Request) -> web.Response:
@@ -34,8 +41,7 @@ async def daily_reset_task() -> None:
         next_run = (now + timedelta(days=1)).replace(hour=0, minute=0, second=5, microsecond=0)
         await asyncio.sleep(max(1, (next_run - now).total_seconds()))
         await reset_limits()
-        logger.info("Kunlik limitlar yangilandi")
-
+    
 
 def build_bot() -> Bot:
     return Bot(
@@ -53,7 +59,6 @@ def build_dispatcher() -> Dispatcher:
 async def on_startup(bot: Bot) -> None:
     await init_db()
     asyncio.create_task(daily_reset_task())
-    logger.info("Bot ishga tushdi")
 
 
 async def run_polling() -> None:
@@ -70,7 +75,8 @@ async def run_webhook() -> None:
     await on_startup(bot)
 
     app = web.Application()
-    app.router.add_get("/health", health)
+    app.router.add_get('/', root)
+    app.router.add_get('/health', health)
     handler = SimpleRequestHandler(
         dispatcher=dp,
         bot=bot,
@@ -87,8 +93,6 @@ async def run_webhook() -> None:
         allowed_updates=dp.resolve_used_update_types(),
     )
 
-    logger.info("Webhook rejimi yoqildi: %s", url)
-    logger.info("Port ochildi: %s", settings.port)
 
     runner = web.AppRunner(app)
     await runner.setup()
@@ -115,4 +119,4 @@ if __name__ == "__main__":
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
-        logger.info("Bot to'xtatildi")
+        pass
